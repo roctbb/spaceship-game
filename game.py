@@ -99,41 +99,69 @@ asteroids = pygame.sprite.Group()
 pygame.font.init()
 font = pygame.font.SysFont('Comic Sans MS', 30)
 
+clock = pygame.time.Clock()
+
+state = "menu"
+
 while True:
 
-    if random.randint(1, 1000) > 900:
-        asteroid_x = random.randint(-100, 700)
-        asteroid_y = -100
-        asteroid = Asteroid(asteroid_x, asteroid_y)
-        asteroids.add(asteroid)
+    if state == "menu":
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                raise SystemExit("QUIT")
 
-    for e in pygame.event.get():
+            if e.type == pygame.MOUSEBUTTONUP:
+                if pygame.Rect(200, 350, 400, 100).collidepoint(e.pos):
+                    raise SystemExit
+                if pygame.Rect(200, 150, 400, 100).collidepoint(e.pos):
+                    ship = Spaceship(400, 400)
+                    state = "game"
 
-        if e.type == pygame.KEYDOWN and e.key == pygame.K_LEFT:
-            left = True
-        if e.type == pygame.KEYDOWN and e.key == pygame.K_RIGHT:
-            right = True
+        pygame.draw.rect(screen, "white", pygame.Rect(0, 0, 800, 600))
+        pygame.draw.rect(screen, "red", pygame.Rect(200, 150, 400, 100))
+        pygame.draw.rect(screen, "blue", pygame.Rect(200, 350, 400, 100))
 
-        if e.type == pygame.KEYUP and e.key == pygame.K_LEFT:
-            left = False
-        if e.type == pygame.KEYUP and e.key == pygame.K_RIGHT:
-            right = False
+        screen.blit(font.render(f'Start', False, (255, 255, 255)), (360, 180))
+        screen.blit(font.render(f'Close', False, (255, 255, 255)), (360, 380))
 
-        if e.type == pygame.QUIT:
-            raise SystemExit("QUIT")
+    if state == "game":
+        if random.randint(1, 1000) > 900:
+            asteroid_x = random.randint(-100, 700)
+            asteroid_y = -100
+            asteroid = Asteroid(asteroid_x, asteroid_y)
+            asteroids.add(asteroid)
 
-    screen.blit(sky, (0, 0))
+        for e in pygame.event.get():
 
-    # добавим группу астероидов в параметры
-    ship.update(left, right, asteroids)
-    ship.draw(screen)
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_LEFT:
+                left = True
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_RIGHT:
+                right = True
 
-    for asteroid in asteroids:
-        asteroid.update()
-        asteroid.draw(screen)
+            if e.type == pygame.KEYUP and e.key == pygame.K_LEFT:
+                left = False
+            if e.type == pygame.KEYUP and e.key == pygame.K_RIGHT:
+                right = False
 
-    # выведем жизнь на экран белым цветом
-    life = font.render(f'HP: {ship.life}', False, (255, 255, 255))
-    screen.blit(life, (20, 20))
+            if e.type == pygame.QUIT:
+                raise SystemExit("QUIT")
+
+        screen.blit(sky, (0, 0))
+
+        # добавим группу астероидов в параметры
+        ship.update(left, right, asteroids)
+        ship.draw(screen)
+
+        for asteroid in asteroids:
+            asteroid.update()
+            asteroid.draw(screen)
+
+        # выведем жизнь на экран белым цветом
+        life = font.render(f'HP: {ship.life}', False, (255, 255, 255))
+        screen.blit(life, (20, 20))
+
+        if ship.life <= 0:
+            state = "menu"
 
     pygame.display.update()
+    clock.tick(60)
